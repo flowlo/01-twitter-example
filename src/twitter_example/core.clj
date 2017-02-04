@@ -5,7 +5,8 @@
            [overtone.at-at :as overtone]
            [twitter.api.restful :as twitter]
            [twitter.oauth :as twitter-oauth]
-           [environ.core :refer [env]]))
+           [environ.core :refer [env]]
+           [clojure.java.io :as io]))
 
 (defn word-chain [word-transition]
   (reduce (fn [r t] (merge-with clojure.set/union r
@@ -68,19 +69,27 @@
   (let [text (generate-text (-> prefix-list shuffle first) functional-leary)]
     (end-at-last-punctuation text)))
 
+(defn easy-tweet-text []
+  (let [text (random-line "astronomy.txt")]
+    (end-at-last-punctuation text)))
+
 (def my-creds (twitter-oauth/make-oauth-creds (env :app-consumer-key)
                                               (env :app-consumer-secret)
                                               (env :user-access-token)
                                               (env :user-access-secret)))
 
 (defn status-update []
-  (let [tweet (tweet-text)]
+  (let [tweet (easy-tweet-text)]
     (println "generate tweet is :" tweet)
     (println "char count is:" (count tweet))
     (when (not-empty tweet)
       (try (twitter/statuses-update :oauth-creds my-creds
                                   :params {:status tweet})
            (catch Exception e (println "Oh no! " (.getMessage e)))))))
+
+(defn random-line [filename]
+ (with-open [reader (io/reader (clojure.java.io/resource filename))]
+   (rand-nth (line-seq reader))))
 
 (def my-pool (overtone/mk-pool))
 
