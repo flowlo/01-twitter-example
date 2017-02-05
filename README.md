@@ -1,6 +1,6 @@
-# Twitter Example
+# Winston Markov
 
-A Twitter bot example in Clojure
+A Twitter bot that constructs tweets based on 1984.
 
 ## Usage
 
@@ -12,7 +12,7 @@ Running `(status-update)` in the nREPL sends a status update through your twitte
 
 ## Credit
 
-This example is based on the [Twitter Bot Example in Clojure](http://howistart.org/posts/clojure/1) by [Carin Meier](https://twitter.com/carinmeier).
+This bot is based on the [Twitter Bot Example in Clojure](http://howistart.org/posts/clojure/1) by [Carin Meier](https://twitter.com/carinmeier).
 
 ## License
 

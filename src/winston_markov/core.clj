@@ -1,4 +1,4 @@
-(ns twitter-example.core
+(ns winston-markov.core
  (:require [clojure.set]
            [clojure.string]
            [clj-http.client :as client]
