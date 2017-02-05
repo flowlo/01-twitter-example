@@ -65,6 +65,23 @@ Alternatively to the step-by-step tutorial you can download the finished project
   ![tweet via repl](doc/images/tweet-via-repl.png)
   ![twitter tweet](doc/images/twitter-tweet.png)
 
+## Deploying to Heroku
+
+ 1. [Create an account on Heroku](https://signup.heroku.com/).
+ 2. Install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli).
+ 3. Open a Shell inside your project folder.
+ 4. Run `heroku apps:create "<REPLACE>"`.
+ 5. Add all magic tokens to the Heroku Environment:
+     ```
+     heroku config:set APP_COSUMER_KEY=<REPLACE>
+     heroku config:set APP_CONSUMER_SECRET=<REPLACE> 
+     heroku config:set USER_ACCESS_SECRET=<REPLACE>
+     heroku config:set USER_ACCESS_TOKEN=<REPLACE>
+     ```
+ 6. Commit your current state using `git commit`
+ 7. Push your changes to Heroku using `git push heroku`
+ 8. Start your bot `heroku run:detach worker`
+ 9. Watch the logs with `heroku logs --tail` (you can kill this process and your bot will stay live).
 
 ## Credit
 
