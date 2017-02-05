@@ -49,9 +49,9 @@
 (defn generate-text
   [start-phrase word-chain hashtag]
   (let [prefix (clojure.string/split start-phrase #" ")
-        result-chain (walk-chain prefix word-chain prefix (- 140 (+ 1 (count hashtag))))
+        result-chain (walk-chain prefix word-chain prefix (- 140 (+ 2 (count hashtag))))
         result-text (chain->text result-chain)]
-   (str (end-at-last-punctuation result-text) " " hashtag)))
+   (str (end-at-last-punctuation result-text) " #" hashtag)))
 
 (defn process-file [fname]
   (text->word-chain
@@ -60,9 +60,43 @@
 (def files ["1984.txt"])
 (def functional-leary (apply merge-with clojure.set/union (map process-file files)))
 
-(def hashtags ["#dystopia" "#orwellian" "#future" "#surveillance" "#bigbrother" "#oneparty" "#warispeace" "#freedomisslavery" "#ignoranceisstrength" "#newspeak" "#oceania"])
+(def hashtags ["dystopia"
+               "orwellian"
+               "future"
+               "surveillance"
+               "bigbrother"
+               "oneparty"
+               "warispeace"
+               "freedomisslavery"
+               "ignoranceisstrength"
+               "newspeak"
+               "oceania"])
 
-(def prefix-list ["I would" "Big Brother" "It was" "There was" "They talked" "She was" "Newspeak is" "The Party" "Winston turned" "What seemed" "The door" "The man" "He paused" "The word" "Abruptly he" "He laid" "At this" "And he" "He raised"])
+
+(def prefix-list ["I would"
+                  "Big Brother"
+                  "It was"
+                  "There was"
+                  "They talked"
+                  "She was"
+                  "Newspeak is"
+                  "The Party"
+                  "Winston turned"
+                  "What seemed"
+                  "The door"
+                  "The man"
+                  "He paused"
+                  "The word"
+                  "Abruptly he"
+                  "He laid"
+                  "At this"
+                  "And he"
+                  "He raised"
+                  "He did"
+                  "Yes, something"
+                  "'Well, perhaps"
+                  "'You are"
+                  "They were"])
 
 (defn generate-tweet-text []
   (generate-text (-> prefix-list shuffle first) functional-leary (-> hashtags shuffle first)))
