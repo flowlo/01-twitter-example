@@ -23,39 +23,6 @@
 (defn chain->text [chain]
   (apply str (interpose " " chain)))
 
-(defn walk-chain [prefix chain result]
-  (let [suffixes (get chain prefix)]
-    (if (empty? suffixes)
-     result
-     (let [suffix (first (shuffle suffixes))
-           new-prefix [(last prefix) suffix]
-           result-with-spaces (chain->text result)
-           result-char-count (count result-with-spaces)
-           suffix-char-count (+ 1 (count suffix))
-           new-result-char-count (+ result-char-count suffix-char-count)]
-      (if (>= new-result-char-count 140)
-       result
-       (recur new-prefix chain (conj result suffix)))))))
-
-(defn generate-text
-  [start-phrase word-chain]
-  (let [prefix (clojure.string/split start-phrase #" ")
-        result-chain (walk-chain prefix word-chain prefix)
-        result-text (chain->text result-chain)]
-   result-text))
-
-(defn process-file [fname]
-  (text->word-chain
-    (slurp (clojure.java.io/resource fname))))
-
-(def files ["fluffyrocketship2.txt" "fluffyrocketship.txt" "astronomy.txt" "theguide.txt"])
-(def functional-leary (apply merge-with clojure.set/union (map process-file files)))
-
-(def prefix-list ["I will" "But if" "So I" "I was" "I am" "We also"
-                  "We have" "I can" "I never" "For you"
-                  "Fuck you" "We need" "We will" "Now this"
-                  "You might" "This is" "Let me" "You better"])
-
 (defn end-at-last-punctuation [text]
   (let [trimmed-to-last-punct (apply str (re-seq #"[\s\w]+[^.!?,]*[.!?,]" text))
         trimmed-to-last-word (apply str (re-seq #".*[^a-zA-Z]+" text))
@@ -65,13 +32,40 @@
         cleaned-text (clojure.string/replace result-text #"[,| ]$" ".")]
     (clojure.string/replace cleaned-text #"\"" "'")))
 
-(defn tweet-text  []
-  (let [text (generate-text (-> prefix-list shuffle first) functional-leary)]
-    (end-at-last-punctuation text)))
+(defn walk-chain [prefix chain result maximum]
+  (let [suffixes (get chain prefix)]
+    (if (empty? suffixes)
+     result
+     (let [suffix (first (shuffle suffixes))
+           new-prefix [(last prefix) suffix]
+           result-with-spaces (chain->text result)
+           result-char-count (count result-with-spaces)
+           suffix-char-count (+ 1 (count suffix))
+           new-result-char-count (+ result-char-count suffix-char-count)]
+      (if (>= new-result-char-count maximum)
+       result
+       (recur new-prefix chain (conj result suffix) maximum))))))
 
-(defn easy-tweet-text []
-  (let [text (random-line "astronomy.txt")]
-    (end-at-last-punctuation text)))
+(defn generate-text
+  [start-phrase word-chain hashtag]
+  (let [prefix (clojure.string/split start-phrase #" ")
+        result-chain (walk-chain prefix word-chain prefix (- 140 (+ 1 (count hashtag))))
+        result-text (chain->text result-chain)]
+   (str (end-at-last-punctuation result-text) " " hashtag)))
+
+(defn process-file [fname]
+  (text->word-chain
+    (slurp (clojure.java.io/resource fname))))
+
+(def files ["1984.txt"])
+(def functional-leary (apply merge-with clojure.set/union (map process-file files)))
+
+(def hashtags ["#dystopia" "#orwellian" "#future" "#surveillance" "#bigbrother" "#oneparty" "#warispeace" "#freedomisslavery" "#ignoranceisstrength" "#newspeak" "#oceania"])
+
+(def prefix-list ["I would" "Big Brother" "It was" "There was" "They talked" "She was" "Newspeak is" "The Party" "Winston turned" "What seemed" "The door" "The man" "He paused" "The word" "Abruptly he" "He laid" "At this" "And he" "He raised"])
+
+(defn generate-tweet-text []
+  (generate-text (-> prefix-list shuffle first) functional-leary (-> hashtags shuffle first)))
 
 (def my-creds (twitter-oauth/make-oauth-creds (env :app-consumer-key)
                                               (env :app-consumer-secret)
@@ -79,7 +73,7 @@
                                               (env :user-access-secret)))
 
 (defn status-update []
-  (let [tweet (easy-tweet-text)]
+  (let [tweet (generate-tweet-text)]
     (println "generate tweet is :" tweet)
     (println "char count is:" (count tweet))
     (when (not-empty tweet)
@@ -87,14 +81,8 @@
                                   :params {:status tweet})
            (catch Exception e (println "Oh no! " (.getMessage e)))))))
 
-(defn random-line [filename]
- (with-open [reader (io/reader (clojure.java.io/resource filename))]
-   (rand-nth (line-seq reader))))
-
 (def my-pool (overtone/mk-pool))
 
 (defn -main [& args]
-  ;; every 2 hours
   (println "Started up")
-  (println (tweet-text))
-  (overtone/every (* 1000 60 60 2) #(println (status-update)) my-pool))
+  (overtone/every (* 1000 30) #(println (status-update)) my-pool))

@@ -6,3 +6,5 @@ pom.properties
 # nrepl specific
 .nrepl-port
 target/
+
+.lein-repl-history
